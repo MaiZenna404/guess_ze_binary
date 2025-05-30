@@ -1,12 +1,11 @@
 import Image from "next/image";
-import BinaryInput from "./Components/BinaryInput";
+import GameLogic from "./Components/GameLogic";
 
 export default function App() {
   return (
     <>
       <div>
-
-        <BinaryInput />
+        <GameLogic />
       </div>
       
     </>
