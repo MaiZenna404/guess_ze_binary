@@ -143,7 +143,7 @@ export default function GameLogic() {
               Binary Challenge
             </CardTitle>
             <CardDescription className="text-center text-lg">
-              Convert this number value to binary
+              Convert this value into binary
             </CardDescription>
           </CardHeader>
 
