@@ -4,10 +4,9 @@ import GameLogic from "./Components/GameLogic";
 export default function App() {
   return (
     <>
-      <div>
+      <div className="text-white/80">
         <GameLogic />
       </div>
-      
     </>
   );
 }

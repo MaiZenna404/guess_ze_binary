@@ -9,7 +9,9 @@ import {
   // InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+
 import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardAction,
@@ -19,7 +21,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Car } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 /* Array containing the answers */
 const binaryMap: Record<string, string> = {
@@ -49,6 +62,8 @@ export default function GameLogic() {
   const [timer, setTimer] = useState(120);
   const [score, setScore] = useState(0);
   const [hint, setHint] = useState(false); // State he toggle hints to false by default
+  const [correct, setCorrect] = useState(false); // State to track if the answer is correct
+
 
   /* Function to select a random letter/number */
   const selectRandomLetterOrNumber = () => {
@@ -77,17 +92,29 @@ export default function GameLogic() {
   // Handle user submission with a function
 
   const guessAnswer = userInput.join("");
+  
   const handleSubmit = () => {
+    setCorrect(true); // Show result message for the current question
     if (guessAnswer === currentBinary) {
       setScore(score + 1);
-      selectRandomLetterOrNumber();
-      setUserInput(Array(4).fill(""));
+      setTimeout(() => {
+        selectRandomLetterOrNumber();
+        setUserInput(Array(4).fill(""));
+        setCorrect(false) // Hide result message for next question;
+        console.log("Correct guess!")
+      }, 1000); // Delay for 1 seconds before selecting a new letter/number
     } else {
       console.log("Incorrect guess");
       selectRandomLetterOrNumber();
       setUserInput(Array(4).fill(""));
+      setCorrect(false);
     }
   };
+
+  const handleHint = () => {
+    setHint(true); // Show hint
+    console.log("Hint: The binary representation of", currentKey, "is", currentBinary);
+  }
 
   /* Reset Game when Timer reaches zero */
   useEffect(() => {
@@ -116,7 +143,7 @@ export default function GameLogic() {
               Binary Challenge
             </CardTitle>
             <CardDescription className="text-center text-lg">
-              Convert the hexadecimal value to binary
+              Convert this number value to binary
             </CardDescription>
           </CardHeader>
 
@@ -155,7 +182,7 @@ export default function GameLogic() {
           <CardFooter className="flex justify-center pb-6">
             <Button
               size="lg"
-              className="w-full max-w-xs bg-primary hover:bg-primary/90 text-lg"
+              className="w-full max-w-xs bg-primary text-white/80 hover:bg-primary/90 text-lg"
               onClick={handleSubmit}
             >
               Submit Answer
@@ -168,7 +195,9 @@ export default function GameLogic() {
       <div className="w-full max-w-xs mt-6 lg:mt-0">
         <Card className="shadow-lg border-primary/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl text-center">Game Stats</CardTitle>
+            <CardTitle className="text-white/80 text-xl text-center">
+              Game Stats
+            </CardTitle>
           </CardHeader>
 
           <CardContent className="space-y-4">
@@ -177,46 +206,82 @@ export default function GameLogic() {
               <p className="text-sm text-muted-foreground">Time Remaining:</p>
               <div className="w-full bg-secondary/30 rounded-full h-4 overflow-hidden">
                 <div
-                  className="bg-primary h-full transition-all duration-1000 ease-linear"
+                  className={`bg-primary h-full transition-all duration-1000 ease-linear ${
+                    timer <= 10 ? "bg-red-700" : "bg-primary"
+                  }`}
+                  role="progressbar"
                   style={{ width: `${(timer / 120) * 100}%` }}
                 ></div>
               </div>
-              <p className="text-xl font-mono text-center">
+              <p
+                className={`text-xl text-center pt-2 ${
+                  timer <= 10 ? "text-red-700 animate-pulse" : ""
+                }`}
+              >
                 {Math.floor(timer / 60)}:
                 {(timer % 60).toString().padStart(2, "0")}
               </p>
             </div>
 
             {/* Score display */}
-            <div className="pt-4 text-center">
+            <div className="pt-4 text-center border border-primary/50 rounded-lg p-4">
               <p className="text-sm text-muted-foreground">Current Score</p>
-              <p className="text-4xl font-bold text-primary">{score}</p>
+              <p className="text-3xl font-bold text-primary pt-2">{score}</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Correct or Wrong Answer */}
-        <Card className="mt-6 shadow-lg border-primary/20">
-          <CardContent>
-            <div className="text-center">
-              {guessAnswer === currentBinary ? (
-                <p className="text-3xl font-bold text-green-500">
-                  Correct Answer !
-                </p>
-              ) : (
-                <p className="text-3xl font-bold text-red-500">
-                  Wrong Answer !
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {correct && (
+          <Card className="mt-6 shadow-lg border-primary/20">
+            <CardContent>
+              <div className="text-center">
+                {guessAnswer === currentBinary ? (
+                  <p className="text-2xl font-bold text-green-700">
+                    Correct Answer !
+                  </p>
+                ) : (
+                  <p className="text-2xl font-bold text-red-700">
+                    Wrong Answer !
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Hints/Help Section */}
       <div className="w-full max-w-xs mt-6 lg:mt-0">
-        <Card className="shadow-lg border-primary/20">
-        </Card>
+        <Button
+          size="lg"
+          className="text-white/80 w-auto max-w-xs bg-primary hover:bg-primary/90 text-lg"
+          onClick={handleHint}
+        >
+          Hint
+        </Button>
+
+        {hint && (
+          <AlertDialog open={hint} onOpenChange={setHint}>
+            <AlertDialogTrigger asChild></AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Hint</AlertDialogTitle>
+                <AlertDialogDescription>
+                  The binary representation of {currentKey} is {currentBinary}.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel
+                  className="text-red-700"
+                  onClick={() => setHint(false)}
+                >
+                  Close
+                </AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </div>
   );
